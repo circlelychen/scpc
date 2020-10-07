@@ -1,6 +1,5 @@
 import os
 import sys
-import argparse
 import logging
 import re
 from urllib.parse import urlparse
@@ -71,25 +70,56 @@ def crawl_photos(root_url):
             f.write(requests.get(img_url).content)
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Crawl photo base tw.class.uschoolnet.com url.')
-    parser.add_argument('--url', help="adfadf")
-    args = parser.parse_args()
-    if not args.url:
-        parser.print_help()
-        sys.exit(0)
-    # valid url
-    # http://tw.class.uschoolnet.com/class/?csid=css000000253804&id=model8&cl=1599038657-9671-9362&mode=con&m8k=1599197439-6088-239&_ulinktreeid=
-    parsed_url = urlparse(args.url)
-    if "http" not in parsed_url.scheme or \
-       "tw.class.uschoolnet.com" not in parsed_url.netloc or \
-       "class" not in parsed_url.path or \
-       "csid" not in parsed_url.query:
-        print("Invalid url: {0}".format(args.url))
-        sys.exit(0)
+def get_topics(root_url):
+    parsed_url = urlparse(root_url)
+    logger.debug("root_url: {0}, parsed_url: {1}".format(root_url, parsed_url))
 
-    urls = get_page_urls(args.url)
-    for url in urls:
-        print("Ready to crawl photo inside {0}".format(url))
-        crawl_photos(url)
+    html = requests.get(root_url, headers=headers).content
+    soup = BeautifulSoup(html, 'lxml')
+
+    topics = []
+    topics.extend(soup.select(
+        'td.jwang_row2_1 a'))
+    topics.extend(soup.select(
+        'td.jwang_row2_2 a'))
+    logger.debug("topics: {0}".format(topics))
+
+    resp = []
+    for topic in topics:
+        if not topic.text.strip():
+            continue
+        name = topic.text.strip()
+        url = parsed_url.scheme + "://" + \
+            parsed_url.netloc + parsed_url.path + topic['href']
+        logger.debug("topic: {0}, url: {1}".format(
+            name, url))
+        resp.append({"name": name, "url": url})
+    return resp
+
+
+if __name__ == '__main__':
+    root_url = "http://tw.class.uschoolnet.com/class/?csid=css000000253804&id=model8&cl=1599038657-9671-9362"
+
+    print("Root URL: {0}".format(root_url))
+    topics = get_topics(root_url)
+    all_idx = range(len(topics))
+    for idx, topic in enumerate(topics):
+        print("No. {0} -> name: {1}".format(idx, topic['name']))
+    is_all = input("Do you want to download all photos? [Y/N]: ")
+    if not "yes" in is_all.lower() and not "y" in is_all.lower():
+        no = input("Please input the No. you want to download photos: ")
+        idx_list = [int(no)]
+    else:
+        idx_list = all_idx
+
+    confirm = input(
+        "Ready to download topic No: {0}. Please confirm? [Y/N]".format(idx_list))
+    if not "yes" in is_all.lower() and not "y" in is_all.lower():
+        sys.exit(0)
+    for idx in idx_list:
+        topics[idx]["name"]
+        urls = get_page_urls(topics[idx]["url"])
+        for url in urls:
+            print("Ready to crawl photo inside {0}".format(
+                url))
+            crawl_photos(url)
