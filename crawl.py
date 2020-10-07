@@ -102,7 +102,7 @@ if __name__ == '__main__':
 
     print("Root URL: {0}".format(root_url))
     topics = get_topics(root_url)
-    all_idx = range(len(topics))
+    all_idx = list(range(len(topics)))
     for idx, topic in enumerate(topics):
         print("No. {0} -> name: {1}".format(idx, topic['name']))
     is_all = input("Do you want to download all photos? [Y/N]: ")
@@ -113,8 +113,8 @@ if __name__ == '__main__':
         idx_list = all_idx
 
     confirm = input(
-        "Ready to download topic No: {0}. Please confirm? [Y/N]".format(idx_list))
-    if not "yes" in is_all.lower() and not "y" in is_all.lower():
+        "Ready to download topic No: {0}. Please confirm? [Y/N] ".format(idx_list))
+    if not "yes" in confirm.lower() and not "y" in confirm.lower():
         sys.exit(0)
     for idx in idx_list:
         topics[idx]["name"]
