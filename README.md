@@ -1,12 +1,15 @@
-# scpc
-SCPC stands for Sheep Class Photos Crawler
+## SCPC
 
-## Build
+**SCPC** stands for **S**heep **C**lass **P**hotos **C**rawler. 
+
+![image](https://github.com/circlelychen/scpc/blob/main/img.png)
+
+### Build
 ~~~bash
-bash build.sh
+$> bash build.sh
 ~~~
 
-## Usage 
+### Usage 
 ~~~bash
-bash run.sh
+$> bash run.sh
 ~~~
