@@ -8,6 +8,8 @@
 
 ### Prerequisite
 * Docker 
+* Bash
+* Mac OSX or Unix-like system
 
 ### Build
 ~~~bash
