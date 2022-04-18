@@ -77,12 +77,21 @@ def get_topics(root_url):
     html = requests.get(root_url, headers=headers).content
     soup = BeautifulSoup(html, 'lxml')
 
+    page_count = soup.find_all('option')[-1]["value"]
+
     topics = []
-    topics.extend(soup.select(
-        'td.jwang_row2_1 a'))
-    topics.extend(soup.select(
-        'td.jwang_row2_2 a'))
-    logger.debug("topics: {0}".format(topics))
+    for page_idx in range(int(page_count)):
+        page_id = page_idx + 1
+
+        page_url = "{0}&page={1}".format(root_url, page_id)
+        html = requests.get(page_url, headers=headers).content
+        soup = BeautifulSoup(html, 'lxml')
+
+        topics.extend(soup.select(
+            'td.jblowball_row2_1 a'))
+        topics.extend(soup.select(
+            'td.jblowball_row2_2 a'))
+        logger.debug("topics: {0}".format(topics))
 
     resp = []
     for topic in topics:
@@ -98,13 +107,25 @@ def get_topics(root_url):
 
 
 if __name__ == '__main__':
-    root_url = "http://tw.class.uschoolnet.com/class/?csid=css000000253804&id=model8&cl=1599038657-9671-9362"
+    root_urls = [
+        {"name": "110學年度 袋鼠班 教學活動",
+            "url": "http://tw.class.uschoolnet.com/class/?csid=css000000256274&id=model8&cl=1630661127-8083-580&page=1"},
+        {"name": "110學年度 袋鼠班 戶外教學活動",
+            "url": "http://tw.class.uschoolnet.com/class/?csid=css000000256274&id=model8&cl=1630035940-9464-2427&page=1"},
+    ]
+    for idx, entry in enumerate(root_urls):
+        print("No. {0} -> name: {1}".format(idx, entry['name']))
+    idx = input("Please input the No. you want to download photos: ")
+    selected_entry = root_urls[int(idx)]
+    print("Name: {0}, Root URL: {1}".format(
+        selected_entry["name"], selected_entry["url"]))
 
-    print("Root URL: {0}".format(root_url))
-    topics = get_topics(root_url)
+    topics = get_topics(selected_entry["url"])
     all_idx = list(range(len(topics)))
     for idx, topic in enumerate(topics):
         print("No. {0} -> name: {1}".format(idx, topic['name']))
+        logger.debug("Url: {0}\n".format(topic["url"]))
+
     is_all = input("Do you want to download all photos? [Y/N]: ")
     if not "yes" in is_all.lower() and not "y" in is_all.lower():
         no = input("Please input the No. you want to download photos: ")
